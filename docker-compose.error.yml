@@ -1,0 +1,5 @@
+services:
+  sample-service:
+    environment:
+      FAIL_HEALTHCHECK: "true"
+      FAIL_RUNTIME: "true"

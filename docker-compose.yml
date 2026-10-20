@@ -1,0 +1,10 @@
+services:
+  sample-service:
+    build: .
+    container_name: looks-sample-vulnerable
+    ports:
+      - "127.0.0.1:8091:8080"
+    environment:
+      FAIL_HEALTHCHECK: "false"
+      FAIL_RUNTIME: "false"
+    restart: "no"
