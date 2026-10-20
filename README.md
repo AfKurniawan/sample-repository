@@ -22,6 +22,9 @@ docker compose up --build
 ```
 
 Service tersedia di `http://127.0.0.1:8091`.
+Agent tersedia di `http://127.0.0.1:8092`.
+
+Agent source dan Dockerfile berada di `Looks/looks-agent`. Agent membaca container berlabel `looks.target=sample-vulnerable` melalui Docker socket proxy read-only. Untuk menghubungkan collector Looks, gunakan host integration `http://127.0.0.1:8092`.
 
 ## Run failure mode
 
@@ -45,6 +48,8 @@ curl -i http://127.0.0.1:8091/healthz
 curl -i 'http://127.0.0.1:8091/api/items?query=sample'
 curl -i http://127.0.0.1:8091/admin/config
 curl -i http://127.0.0.1:8091/unstable
+curl -i http://127.0.0.1:8092/healthz
+curl -i http://127.0.0.1:8092/logs
 ```
 
 The sample is intentionally local-only and is not connected to the Looks API automatically yet.

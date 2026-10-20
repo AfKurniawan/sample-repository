@@ -2,9 +2,36 @@ services:
   sample-service:
     build: .
     container_name: looks-sample-vulnerable
+    labels:
+      looks.managed: "true"
+      looks.target: "sample-vulnerable"
     ports:
       - "127.0.0.1:8091:8080"
     environment:
       FAIL_HEALTHCHECK: "false"
       FAIL_RUNTIME: "false"
+    restart: "no"
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    container_name: looks-sample-docker-socket-proxy
+    environment:
+      CONTAINERS: "1"
+      POST: "0"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: "no"
+
+  looks-agent:
+    build: ../looks-agent
+    container_name: looks-sample-agent
+    ports:
+      - "127.0.0.1:8092:8092"
+    environment:
+      DOCKER_API: http://docker-socket-proxy:2375
+      TARGET_LABEL: looks.target=sample-vulnerable
+      TARGET_HEALTH_URL: http://host.docker.internal:8091/healthz
+    depends_on:
+      - sample-service
+      - docker-socket-proxy
     restart: "no"

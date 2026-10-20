@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 from flask import Flask, jsonify, request, send_file
@@ -15,6 +16,21 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 INTERNAL_API_KEY = "sample-only-not-a-real-secret-123456"
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DB_PATH = DATA_DIR / "sample.db"
+
+RUNTIME_EVENTS = [
+    {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "level": "INFO",
+        "message": "sample service started in local Docker mode",
+        "source": "sample-service",
+    },
+    {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "level": "WARN",
+        "message": "debug mode is enabled for the security fixture",
+        "source": "sample-service",
+    },
+]
 
 
 def database() -> sqlite3.Connection:
@@ -89,8 +105,21 @@ def admin_config():
 @app.get("/unstable")
 def unstable():
     if os.getenv("FAIL_RUNTIME", "false").lower() == "true":
+        RUNTIME_EVENTS.append(
+            {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "level": "ERROR",
+                "message": "intentional sample runtime failure",
+                "source": "sample-service",
+            }
+        )
         raise RuntimeError("intentional sample runtime failure")
     return jsonify({"status": "stable"})
+
+
+@app.get("/logs")
+def logs():
+    return jsonify({"events": RUNTIME_EVENTS[-100:]})
 
 
 @app.errorhandler(Exception)
